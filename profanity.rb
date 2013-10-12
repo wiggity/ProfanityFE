@@ -32,11 +32,6 @@ require 'rexml/document'
 require 'curses'
 include Curses
 
-Curses.init_screen
-Curses.start_color
-Curses.cbreak
-Curses.noecho
-
 class TextWindow < Curses::Window
 	attr_reader :color_stack, :buffer
 	attr_accessor :scrollbar, :indent_word_wrap, :layout
@@ -471,6 +466,23 @@ end
 unless defined?(PORT)
 	PORT = 8000
 end
+
+# Try to connect to lich client
+IP = '127.0.0.1'
+begin
+	server = TCPSocket.open(IP, PORT)
+rescue Exception => e
+	puts "Problem encountered while trying to connect to #{IP}:#{PORT}"
+	puts e.backtrace
+	exit
+end
+
+# Start curses
+Curses.init_screen
+Curses.start_color
+Curses.cbreak
+Curses.noecho
+
 unless defined?(DEFAULT_COLOR_ID)
 	DEFAULT_COLOR_ID = 7
 end
@@ -1490,8 +1502,6 @@ load_settings_file.call(false)
 load_layout.call('default')
 
 TextWindow.list.each { |w| w.maxy.times { w.add_string "\n" } }
-
-server = TCPSocket.open('127.0.0.1', PORT)
 
 Thread.new { sleep 15; skip_server_time_offset = false }
 
